@@ -1,0 +1,5 @@
+{
+  "name": "HyperDim Architect",
+  "description": "An interactive 1D to 9d geometry simulation where you can extrude shapes into higher dimensions, rotate them in multi-dimensional space, and use Gemini AI to generate complex hyper-shapes.",
+  "requestFramePermissions": []
+}
