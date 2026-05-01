@@ -103,11 +103,12 @@ export const explainDimension = async (dim: number): Promise<string> => {
   return response.text || "Dimension info unavailable.";
 };
 
-export const explainToratope = async (sequence: number[]): Promise<string> => {
+export const explainToratope = async (sequence: string | number[]): Promise<string> => {
   try {
+    const seqStr = Array.isArray(sequence) ? sequence.join(', ') : sequence;
     const response = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: `The user is about to load a multi-dimensional toratope with the numeric sequence [${sequence.join(', ')}]. 
+      contents: `The user is about to load a multi-dimensional toratope with the numeric sequence [${seqStr}]. 
 To understand this notation, read from left to right:
 - The first number is the base shape: 1 = line segment, 2 = circle/disk, 3 = solid sphere, 4 = 4D sphere (glome), etc.
 - Each subsequent number modifies the shape: 

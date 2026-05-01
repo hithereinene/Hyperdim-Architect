@@ -3,6 +3,9 @@ import SimulationCanvas from './components/SimulationCanvas';
 import Controls from './components/Controls';
 import { Shape, RotationState, Vertex, Edge } from './types';
 import { 
+    generateTetrahedralUrsachoron,
+    generateOctahedralUrsachoron,
+    generateIcosahedralUrsachoron,
     extrudeShape, 
     generateHypercube, 
     generateSimplex, 
@@ -28,6 +31,12 @@ import {
     generateAgapornis,
     generateAnomalocaris,
     generateHomoSapiens,
+    generateStarPolygon,
+    generateGyrochoron,
+    generateBigyrochoron,
+    generateAntibigyrochoron,
+    generateGyropeton,
+    generateSpecialCut600Cell,
     generateE8Polytope,
     generateDemiOcteract,
     generate1600Yotta,
@@ -44,7 +53,7 @@ import {
     generate10Orthoplex,
     generateHendeceract,
     generate11Simplex,
-    generate11Orthoplex,
+    generate11Orthoplex, generateDodeceract, generate12Simplex, generate12Orthoplex,
     generate1200Teron,
     generateDemipenteract,
     generateDodecateron,
@@ -67,15 +76,52 @@ import {
     truncateShape,
     rectifyShape,
     omnitruncateShape,
+    expandShape,
+    runcinateShape,
     stellateShape,
     snubShape,
+    ursaize,
     generateGrandHecatonicosinterceptedTrishecatonicosachoron,
+    generate96DiminishedSmallDisprismatohexacosihecatonicosachoron,
+    generateCubicalPyramid,
+    generatePentagonalPrismPyramid,
+    generateRuncinatedSnub24Cell,
+    generateIcosahedralPyramid,
+    generateDodecahedralPyramid,
+    generateTetrahedralPyramid,
+    generateTruncatedTetrahedralPyramid,
+    generateTruncatedCubePyramid,
+    generateTruncatedOctahedronPyramid,
+    generateTruncatedDodecahedronPyramid,
+    generateTruncatedIcosahedronPyramid,
+    generateCuboctahedronPyramid,
+    generateIcosidodecahedronPyramid,
+    generateRhombicuboctahedronPyramid,
+    generateRhombicosidodecahedronPyramid,
+    generateSnubCubePyramid,
+    generateSnubDodecahedronPyramid,
+    generateCubeAtopIcosahedron,
+    generateCubeAtopCuboctahedron,
+    generateOctahedronAtopRhombicuboctahedron,
+    generateCuboctahedronAtopTruncatedCube,
+    generateSmallDisprismatohexacosihecatonicosachoron,
     generatePentachoricTrischiliaoctacositetracontateron,
     pyramidizeShape,
     dualShape,
     getAxisName,
     generateCartesianProduct,
-    generateOFFContent
+    generateOFFContent,
+    generate2_21Polytope,
+    generateTrioprism,
+    generateTriopyramid,
+    generateTriotegum,
+    generateTriocylinder,
+    generateTriocone,
+    generateDuotegum,
+    parseOFF,
+    bipyramidizeShape,
+    antiprismizeShape,
+    cupolizeShape
 } from './services/mathUtils';
 import { generateShapeWithGemini, explainDimension } from './services/geminiService';
 
@@ -95,19 +141,20 @@ const PRESETS = [
     'tiger-sphere', 'cylo-goroid', 'cylointigoroid',
     'herures-shape', 'novairus', 'nemas-torisphere',
     'agapornis', 'anomalocaris', 'homo-sapiens',
-    'sphere-3', 'sphere-4', 'sphere-5', 'sphere-6', 'sphere-7', 'sphere-8', 'sphere-9', 'sphere-10', 'sphere-11',
-    'tetrahedron', 'cube', 'octahedron', 'dodecahedron', 'icosahedron',
+    'sphere-3', 'sphere-4', 'sphere-5', 'sphere-6', 'sphere-7', 'sphere-8', 'sphere-9', 'sphere-10', 'sphere-11', 'sphere-12',
+    'tetrahedron', 'cube', 'octahedron', 'dodecahedron', 'icosahedron', 'ursahedron',
     'truncated-octahedron', 'snub-cube', 'disdyakis', 'enneacontahedron', 'cylinder', 'cone',
     'pyramid-4', 'pyramid-5', 'prism-3', 'prism-5', 'prism-6', 'antiprism-4', 'antiprism-6',
     'pentachoron', 'tesseract', '16-cell', '24-cell', 'cubinder', 'spherinder', 'duocylinder',
     'spherocone', 'toricone', 'octa-prism', 'octa-pyramid', 'gippic', '600-cell', '120-cell',
-    'ghit', '720-cell', 'omni-tesseract', 'enneacontachoron',
+    'ghit', '96dsdh', '720-cell', 'omni-tesseract', 'enneacontachoron',
     'pentachoric-trischiliaoctacositetracontateron',
     'penteract', 'demipenteract', 'dodecateron', '1200-teron', 'hexeract', 'hepteract',
     'octeract', '8-simplex', '8-orthoplex', 'e8-polytope', 'demi-octeract',
     'enneact', '9-simplex', '1600-yotta',
     'deceract', '10-simplex', '10-orthoplex',
-    'hendeceract', '11-simplex', '11-orthoplex'
+    'hendeceract', '11-simplex', '11-orthoplex',
+    'dodeceract', '12-simplex', '12-orthoplex'
 ];
 
 const App: React.FC = () => {
@@ -116,9 +163,10 @@ const App: React.FC = () => {
   const [extrusionSegments, setExtrusionSegments] = useState<number>(3); // Default to Triangle
   
   // N-tope Maker State (formerly Hedron Maker)
-  const [ntopeConfig, setNtopeConfig] = useState<{sides1: number, sides2: number, type: string}>({
+  const [ntopeConfig, setNtopeConfig] = useState<{sides1: number, sides2: number, sides3: number, type: string}>({
       sides1: 5,
       sides2: 5,
+      sides3: 5,
       type: 'Pyramid'
   });
 
@@ -129,6 +177,10 @@ const App: React.FC = () => {
       ringSegments: 32,
       tubeSegments: 16
   });
+
+  const [gyroConfig, setGyroConfig] = useState({ p: 42, q: 2, type: 'gyrochoron' });
+  const [gyropetonConfig, setGyropetonConfig] = useState({ p: 15, q: 3, r: 6 });
+  const [specialCutConfig, setSpecialCutConfig] = useState({ index: 1 });
 
   // Spin State
   const [spinConfig, setSpinConfig] = useState({ majorRadius: 1.5, segments: 16, targetDim: 4 });
@@ -150,6 +202,47 @@ const App: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   
+  const handleCreateGyrochoron = useCallback(() => {
+    let newShape: Shape;
+    let targetDim = 4;
+    let shapeName = '';
+    if (gyroConfig.type === 'gyrochoron') {
+        newShape = generateGyrochoron(gyroConfig.p, gyroConfig.q);
+        shapeName = 'Gyrochoron';
+    } else if (gyroConfig.type === 'bigyrochoron') {
+        newShape = generateBigyrochoron(gyroConfig.p, gyroConfig.q);
+        shapeName = 'Bigyrochoron';
+    } else if (gyroConfig.type === 'antibigyrochoron') {
+        newShape = generateAntibigyrochoron(gyroConfig.p, gyroConfig.q);
+        shapeName = 'Antibigyrochoron';
+    } else {
+        newShape = generateGyrochoron(gyroConfig.p, gyroConfig.q);
+        shapeName = 'Gyrochoron';
+    }
+    setShape(newShape);
+    setActiveDim(targetDim);
+    setAiResponse(`Generated a ${gyroConfig.p}-${gyroConfig.q} ${shapeName} (${newShape.vertices.length} vertices, ${newShape.edges.length} edges).`);
+  }, [gyroConfig]);
+
+  const handleCreateGyropeton = useCallback(() => {
+    const newShape = generateGyropeton(gyropetonConfig.p, gyropetonConfig.q, gyropetonConfig.r);
+    setShape(newShape);
+    setActiveDim(5);
+    setAiResponse(`Generated a ${gyropetonConfig.p}-${gyropetonConfig.q}-${gyropetonConfig.r} Gyropeton (${newShape.vertices.length} vertices, ${newShape.edges.length} edges).`);
+  }, [gyropetonConfig]);
+
+  const handleSpecialCut = useCallback(() => {
+    let index = specialCutConfig.index;
+    if (index === -1) {
+      index = Math.floor(Math.random() * 314248344) + 1;
+      setSpecialCutConfig({ index });
+    }
+    const newShape = generateSpecialCut600Cell(index);
+    setShape(newShape);
+    setActiveDim(4);
+    setAiResponse(`Generated Special Cut #${index} of the 600-Cell (${newShape.vertices.length} vertices, ${newShape.edges.length} edges).`);
+  }, [specialCutConfig]);
+
   // Determine easter egg probability once per page load
   const [isAprilFools] = useState<boolean>(() => Math.random() < 0.5);
   
@@ -187,11 +280,11 @@ const App: React.FC = () => {
 
   // Update shape when user requests extrusion
   const handleExtrude = useCallback(() => {
-    if (activeDim >= 11) return;
+    if (activeDim >= 12) return;
     
     // Extrude FROM the current shape's actual dimension INTO the new dimension index
     const nextDimIndex = shape.dimension; 
-    if (nextDimIndex >= 11) return;
+    if (nextDimIndex >= 12) return;
 
     let newShapeData: { vertices: Vertex[], edges: Edge[], name?: string, dimension?: number } | null = null;
 
@@ -235,7 +328,7 @@ const App: React.FC = () => {
         });
         
         // Auto-switch view to the new dimension so they can see it
-        setActiveDim(Math.min(11, finalDimension));
+        setActiveDim(Math.min(12, finalDimension));
     }
 
   }, [shape, activeDim, extrusionSegments]);
@@ -250,7 +343,7 @@ const App: React.FC = () => {
   };
 
   const handleCreateNtope = () => {
-      const { sides1, sides2, type } = ntopeConfig;
+      const { sides1, sides2, sides3, type } = ntopeConfig;
       let newShape: Shape | null = null;
       let targetDim = 3;
 
@@ -275,9 +368,21 @@ const App: React.FC = () => {
               newShape = generateDuoprism(sides1, sides2);
               targetDim = 4;
               break;
-          case 'Duopyramid':
+          case 'Duotegnum':
               newShape = generateDuopyramid(sides1, sides2);
               targetDim = 4;
+              break;
+          case 'Trioprism':
+              newShape = generateTrioprism(sides1, sides2, sides3);
+              targetDim = 6;
+              break;
+          case 'Triopyramid':
+              newShape = generateTriopyramid(sides1, sides2, sides3);
+              targetDim = 6;
+              break;
+          case 'Triotegnum':
+              newShape = generateTriotegum(sides1, sides2, sides3);
+              targetDim = 6;
               break;
           default:
               newShape = generatePolygonalPyramid(sides1);
@@ -340,6 +445,84 @@ const App: React.FC = () => {
       setAiResponse(`Omnitruncated ${shape.name}.`);
   };
 
+  const handleExpand = () => {
+      const newShape = expandShape(shape);
+      setShape(newShape);
+      setAiResponse(`Expanded ${shape.name}.`);
+  };
+
+  const handleRuncinate = () => {
+      const newShape = runcinateShape(shape);
+      setShape(newShape);
+      setAiResponse(`Runcinated ${shape.name}.`);
+  };
+
+  const handleWythoff = (activeRings: number[]) => {
+      const ringsStr = activeRings.join(',');
+      const d = shape.dimension;
+      const allRings = Array.from({length: d}, (_, i) => i + 1).join(',');
+      
+      let newShape = shape;
+      let opName = "";
+
+      if (ringsStr === '1') {
+          return;
+      } else if (ringsStr === `${d}`) {
+          newShape = dualShape(shape);
+          opName = "Dual";
+      } else if (ringsStr === '2') {
+          newShape = rectifyShape(shape);
+          opName = "Rectified";
+      } else if (ringsStr === `${d-1}`) {
+          newShape = rectifyShape(dualShape(shape));
+          opName = d === 3 ? "Rectified Dual" : "Birectified";
+      } else if (ringsStr === '1,2') {
+          newShape = truncateShape(shape);
+          opName = "Truncated";
+      } else if (ringsStr === `${d-1},${d}`) {
+          newShape = truncateShape(dualShape(shape));
+          opName = d === 3 ? "Bitruncated" : d === 4 ? "Tritruncated" : "Truncated Dual";
+      } else if (ringsStr === '2,3') {
+          newShape = d === 3 ? truncateShape(dualShape(shape)) : truncateShape(rectifyShape(shape));
+          opName = "Bitruncated";
+      } else if (ringsStr === '1,3') {
+          newShape = expandShape(shape);
+          opName = "Cantellated";
+      } else if (ringsStr === '1,4') {
+          newShape = runcinateShape(shape);
+          opName = "Runcinated";
+      } else if (ringsStr === `1,${d}`) {
+          newShape = expandShape(shape);
+          opName = d === 4 ? "Runcinated" : d === 5 ? "Stericated" : d === 6 ? "Pentellated" : "Expanded";
+      } else if (ringsStr === '1,2,3') {
+          newShape = truncateShape(rectifyShape(shape));
+          opName = "Cantitruncated";
+      } else if (ringsStr === '1,2,4') {
+          newShape = truncateShape(runcinateShape(shape));
+          opName = "Runcitruncated";
+      } else if (ringsStr === '1,3,4') {
+          newShape = rectifyShape(runcinateShape(shape));
+          opName = "Runcicantellated";
+      } else if (ringsStr === allRings) {
+          newShape = omnitruncateShape(shape);
+          opName = "Omnitruncated";
+      } else {
+          let temp = shape;
+          if (activeRings.includes(d)) temp = dualShape(temp);
+          if (activeRings.includes(3)) temp = rectifyShape(dualShape(temp));
+          if (activeRings.includes(2)) temp = rectifyShape(temp);
+          if (activeRings.includes(1)) temp = truncateShape(temp);
+          newShape = temp;
+          opName = `Wythoffian [${ringsStr}]`;
+      }
+
+      const baseName = shape.name.replace(/^(Rectified|Truncated|Omnitruncated|Expanded|Runcinated|Dual|Bitruncated|Cantellated|Cantitruncated|Runcitruncated|Runcicantellated|Birectified|Tritruncated|Stericated|Pentellated|Wythoffian \[.*?\]) /, '');
+      newShape.name = `${opName} ${baseName}`;
+      
+      setShape(newShape);
+      setAiResponse(`Applied Wythoffian operation [${ringsStr}] to create ${newShape.name}.`);
+  };
+
   const handleStellate = () => {
       const newShape = stellateShape(shape);
       setShape(newShape);
@@ -350,6 +533,62 @@ const App: React.FC = () => {
       const newShape = snubShape(shape);
       setShape(newShape);
       setAiResponse(`Snubbed ${shape.name}.`);
+  };
+
+  const handleBipyramidize = () => {
+      if (shape.dimension >= 10) {
+          setAiResponse("Cannot bipyramidize beyond 10 dimensions.");
+          return;
+      }
+      const newShape = bipyramidizeShape(shape);
+      setShape(newShape);
+      setActiveDim(newShape.dimension);
+      setAiResponse(`Bipyramidized ${shape.name}.`);
+  };
+
+  const handleUrsaize = () => {
+    if (!shape) return;
+    try { 
+        const s = ursaize(shape);
+        setShape(s);
+        setActiveDim(s.dimension);
+        setAiResponse(`Applied ursatope expansion (+1 Dimension). New shape has ${s.vertices.length} vertices and ${s.edges.length} edges.`);
+        resetRotation();
+    } catch (e: any) { alert(e.message); }
+  };
+
+  const handleAntiprismize = () => {
+      if (shape.dimension >= 10) {
+          setAiResponse("Cannot antiprismize beyond 10 dimensions.");
+          return;
+      }
+      const newShape = antiprismizeShape(shape);
+      setShape(newShape);
+      setActiveDim(newShape.dimension);
+      setAiResponse(`Antiprismized ${shape.name}.`);
+  };
+
+  const handleCupolize = () => {
+      if (shape.dimension >= 10) {
+          setAiResponse("Cannot cupolize beyond 10 dimensions.");
+          return;
+      }
+      const newShape = cupolizeShape(shape);
+      setShape(newShape);
+      setActiveDim(newShape.dimension);
+      setAiResponse(`Cupolized ${shape.name}.`);
+  };
+
+  const handleLoadOFF = (offString: string) => {
+      try {
+          const newShape = parseOFF(offString);
+          setShape(newShape);
+          setActiveDim(newShape.dimension);
+          setAiResponse(`Loaded OFF file: ${newShape.stats?.vertices} vertices, ${newShape.stats?.faces} faces`);
+      } catch (err) {
+          console.error(err);
+          setAiResponse("Failed to parse OFF file. Check console for details.");
+      }
   };
 
   const handlePyramidize = () => {
@@ -429,9 +668,9 @@ const App: React.FC = () => {
         case 'cylointigoroid': newShape = generateCylointigoroid(1.5, 1, 1, 0.3, 8); targetDim=5; break;
         
         // Advanced Numeric Toratopes
-        case 'herures-shape': newShape = generateNumericToratope([3, 2, 1, 2], "Herure's Shape (3212)"); targetDim=8; break;
-        case 'novairus': newShape = generateNumericToratope([2, 1, 2, 1, 1, 2], "Novairus (212112)"); targetDim=9; break;
-        case 'nemas-torisphere': newShape = generateNumericToratope([1, 2, 4, 2], "Nema's Torisphere (1242)"); targetDim=9; break;
+        case 'herures-shape': newShape = generateNumericToratope("3212", "Herure's Shape (3212)"); targetDim=8; break;
+        case 'novairus': newShape = generateNumericToratope("212112", "Novairus (212112)"); targetDim=9; break;
+        case 'nemas-torisphere': newShape = generateNumericToratope("1242", "Nema's Torisphere (1242)"); targetDim=9; break;
 
         // Biological
         case 'agapornis': newShape = generateAgapornis(); targetDim=3; break;
@@ -448,6 +687,7 @@ const App: React.FC = () => {
         case 'sphere-9': newShape = generateHypersphere(9); targetDim=9; break;
         case 'sphere-10': newShape = generateHypersphere(10); targetDim=10; break;
         case 'sphere-11': newShape = generateHypersphere(11); targetDim=11; break;
+        case 'sphere-12': newShape = generateHypersphere(12); targetDim=12; break;
 
         // 3D Platonic Solids
         case 'tetrahedron': newShape = generateSimplex(3); targetDim=3; break;
@@ -455,6 +695,7 @@ const App: React.FC = () => {
         case 'octahedron': newShape = generateOctahedron(); targetDim=3; break;
         case 'dodecahedron': newShape = generateDodecahedron(); targetDim=3; break;
         case 'icosahedron': newShape = generateIcosahedron(); targetDim=3; break;
+        case 'ursahedron': newShape = ursaize(generatePolygon(3)); newShape.name="Ursahedron (Tridiminished Icosahedron)"; targetDim=3; break;
         
         // 3D Non-Platonic
         case 'truncated-octahedron': 
@@ -503,6 +744,51 @@ const App: React.FC = () => {
         case '600-cell': newShape = generate600Cell(); targetDim=4; break;
         case '120-cell': newShape = generate120Cell(); targetDim=4; break;
         case 'ghit': newShape = generateGrandHecatonicosinterceptedTrishecatonicosachoron(); targetDim=4; break;
+        case 'sdh': newShape = generateSmallDisprismatohexacosihecatonicosachoron(); targetDim=4; break;
+        case '96dsdh': newShape = generate96DiminishedSmallDisprismatohexacosihecatonicosachoron(); targetDim=4; break;
+        case 'cubical-pyramid': newShape = generateCubicalPyramid(); targetDim=4; break;
+        case 'pentagonal-prism-pyramid': newShape = generatePentagonalPrismPyramid(); targetDim=4; break;
+        case 'runcinated-snub-24-cell': newShape = generateRuncinatedSnub24Cell(); targetDim=4; break;
+        case 'icosahedral-pyramid': newShape = generateIcosahedralPyramid(); targetDim=4; break;
+        case 'dodecahedral-pyramid': newShape = generateDodecahedralPyramid(); targetDim=4; break;
+        case 'tetrahedral-pyramid': newShape = generateTetrahedralPyramid(); targetDim=4; break;
+        case 'truncated-tetrahedral-pyramid': newShape = generateTruncatedTetrahedralPyramid(); targetDim=4; break;
+        case 'truncated-cube-pyramid': newShape = generateTruncatedCubePyramid(); targetDim=4; break;
+        case 'truncated-octahedron-pyramid': newShape = generateTruncatedOctahedronPyramid(); targetDim=4; break;
+        case 'truncated-dodecahedron-pyramid': newShape = generateTruncatedDodecahedronPyramid(); targetDim=4; break;
+        case 'truncated-icosahedron-pyramid': newShape = generateTruncatedIcosahedronPyramid(); targetDim=4; break;
+        case 'cuboctahedron-pyramid': newShape = generateCuboctahedronPyramid(); targetDim=4; break;
+        case 'icosidodecahedron-pyramid': newShape = generateIcosidodecahedronPyramid(); targetDim=4; break;
+        case 'rhombicuboctahedron-pyramid': newShape = generateRhombicuboctahedronPyramid(); targetDim=4; break;
+        case 'rhombicosidodecahedron-pyramid': newShape = generateRhombicosidodecahedronPyramid(); targetDim=4; break;
+        case 'snub-cube-pyramid': newShape = generateSnubCubePyramid(); targetDim=4; break;
+        case 'snub-dodecahedron-pyramid': newShape = generateSnubDodecahedronPyramid(); targetDim=4; break;
+        case 'cube-atop-icosahedron': newShape = generateCubeAtopIcosahedron(); targetDim=4; break;
+        case 'cube-atop-cuboctahedron': newShape = generateCubeAtopCuboctahedron(); targetDim=4; break;
+        case 'octahedron-atop-rhombicuboctahedron': newShape = generateOctahedronAtopRhombicuboctahedron(); targetDim=4; break;
+        case 'cuboctahedron-atop-truncated-cube': newShape = generateCuboctahedronAtopTruncatedCube(); targetDim=4; break;
+        case 'cube-antiprism': newShape = antiprismizeShape(generateHypercube(3)); newShape.name = 'Cube antiprism (K4.15)'; targetDim=4; break;
+        case 'truncated-tetrahedral-cupoliprism': newShape = cupolizeShape(truncateShape(generateSimplex(3))); newShape.name = 'Truncated tetrahedral cupoliprism (K4.55)'; targetDim=4; break;
+        case 'tetrahedral-canticupola': newShape = cupolizeShape(generateSimplex(3)); newShape.name = 'Tetrahedral canticupola (K4.76)'; targetDim=4; break;
+        case 'square-magnabicupolic-ring': newShape = generateHypercube(4); newShape.name = 'Square magnabicupolic ring (K4.105) [Placeholder]'; targetDim=4; break;
+        case 'bilunabirotunda-pseudopyramid': newShape = generateBilunabirotundaPseudopyramid(); targetDim=4; break;
+        case 'tetrahedral-ursachoron': newShape = generateTetrahedralUrsachoron(); targetDim=4; break;
+        case 'octahedral-ursachoron': newShape = generateOctahedralUrsachoron(); targetDim=4; break;
+        case 'icosahedral-ursachoron': newShape = generateIcosahedralUrsachoron(); targetDim=4; break;
+        case 'deca-augmented-5-10-duoprism': newShape = generateDecaAugmented5_10Duoprism(); targetDim=4; break;
+        case 'deca-augmented-5-20-duoprism': newShape = generateDecaAugmented5_20Duoprism(); targetDim=4; break;
+        case 'augmented-cantitruncated-5-cell': newShape = generateAugmentedCantitruncated5Cell(); targetDim=4; break;
+        case 'octa-augmented-runcinated-tesseract': newShape = generateOctaAugmentedRuncinatedTesseract(); targetDim=4; break;
+        case 'octa-augmented-truncated-tesseract': newShape = generateOctaAugmentedTruncatedTesseract(); targetDim=4; break;
+        case 'octa-augmented-runcitruncated-16-cell': newShape = generateOctaAugmentedRuncitruncated16Cell(); targetDim=4; break;
+        case 'biparabigyrated-cantellated-tesseract': newShape = generateHypercube(4); newShape.name = 'Biparabigyrated cantellated tesseract [Placeholder]'; targetDim=4; break;
+        case 'bi-icositetradiminished-600-cell': newShape = generateHypercube(4); newShape.name = 'Bi-icositetradiminished 600-cell [Placeholder]'; targetDim=4; break;
+        case 'swirlprismatodiminished-rectified-600-cell': newShape = generateHypercube(4); newShape.name = 'Swirlprismatodiminished rectified 600-cell [Placeholder]'; targetDim=4; break;
+        case 'castellated-rhombicosidodecahedral-prism': newShape = generateHypercube(4); newShape.name = 'Castellated rhombicosidodecahedral prism [Placeholder]'; targetDim=4; break;
+        case 'triangular-hebesphenorotundaeic-rhombochoron': newShape = generateHypercube(4); newShape.name = 'Triangular hebesphenorotundaeic rhombochoron [Placeholder]'; targetDim=4; break;
+        case 'pentagonorhombic-trisnub-trisoctachoron': newShape = generateHypercube(4); newShape.name = 'Pentagonorhombic trisnub trisoctachoron (D4.11) [Placeholder]'; targetDim=4; break;
+        case 'duoprism-5-10': newShape = generateDuoprism(5, 10); targetDim=4; break;
+        case 'duoprism-5-20': newShape = generateDuoprism(5, 20); targetDim=4; break;
         case '720-cell': newShape = generate720Cell(); targetDim=4; break;
         case 'omni-tesseract': newShape = generateOmniTesseract(); targetDim=4; break;
         case 'enneacontachoron': newShape = generateEnneacontachoron(); targetDim=4; break;
@@ -522,7 +808,7 @@ const App: React.FC = () => {
         case 'hexeract': newShape = generateHypercube(6); targetDim=6; break;
         case 'hepteract': newShape = generateHypercube(7); targetDim=7; break;
 
-        // 8D-11D
+        // 8D-12D
         case 'octeract': newShape = generateHypercube(8); targetDim=8; break;
         case '8-simplex': newShape = generateSimplex(8); targetDim=8; break;
         case '8-orthoplex': newShape = generateOrthoplex(8); targetDim=8; break;
@@ -540,6 +826,29 @@ const App: React.FC = () => {
         case 'hendeceract': newShape = generateHendeceract(); targetDim=11; break;
         case '11-simplex': newShape = generate11Simplex(); targetDim=11; break;
         case '11-orthoplex': newShape = generate11Orthoplex(); targetDim=11; break;
+        case 'dodeceract': newShape = generateDodeceract(); targetDim=12; break;
+        case '12-simplex': newShape = generate12Simplex(); targetDim=12; break;
+        case '12-orthoplex': newShape = generate12Orthoplex(); targetDim=12; break;
+        
+        // 13D-15D
+        case '13-cube': newShape = generateHypercube(13); targetDim=13; break;
+        case '13-simplex': newShape = generateSimplex(13); targetDim=13; break;
+        case '13-orthoplex': newShape = generateOrthoplex(13); targetDim=13; break;
+        case '14-cube': newShape = generateHypercube(14); targetDim=14; break;
+        case '14-simplex': newShape = generateSimplex(14); targetDim=14; break;
+        case '14-orthoplex': newShape = generateOrthoplex(14); targetDim=14; break;
+        case '15-cube': newShape = generateHypercube(15); targetDim=15; break;
+        case '15-simplex': newShape = generateSimplex(15); targetDim=15; break;
+        case '15-orthoplex': newShape = generateOrthoplex(15); targetDim=15; break;
+
+        // New Shapes
+        case '2_21-polytope': newShape = generate2_21Polytope(); targetDim=6; break;
+        case 'trioprism': newShape = generateTrioprism(3,3,3); targetDim=6; break;
+        case 'triopyramid': newShape = generateTriopyramid(3,3,3); targetDim=6; break;
+        case 'triotegum': newShape = generateTriotegum(3,3,3); targetDim=6; break;
+        case 'triocylinder': newShape = generateTriocylinder(16, 16, 16); targetDim=6; break;
+        case 'triocone': newShape = generateTriocone(16, 16, 16); targetDim=6; break;
+        case 'duotegum': newShape = generateDuotegum(4,4); targetDim=4; break;
     }
     
     return { shape: newShape, targetDim, triggerEgg, triggerEggUrl, appliedAprilFools };
@@ -578,8 +887,8 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleLoadNumericToratope = (sequence: number[], customName?: string) => {
-      const name = customName || `Custom Toratope (${sequence.join('')})`;
+  const handleLoadNumericToratope = (sequence: string, customName?: string) => {
+      const name = customName || `Custom Toratope (${sequence})`;
       const newShape = generateNumericToratope(sequence, name);
       setShape(newShape);
       setActiveDim(Math.max(activeDim, newShape.dimension));
@@ -600,7 +909,7 @@ const App: React.FC = () => {
   const handleRandomSpin = () => {
     const randomMajorRadius = 0.5 + Math.random() * 4.5; // 0.5 to 5.0
     const randomSegments = 4 + Math.floor(Math.random() * 15) * 2; // 4 to 32 (even numbers)
-    const randomTargetDim = Math.max(shape.dimension + 1, Math.min(11, shape.dimension + 1 + Math.floor(Math.random() * 3)));
+    const randomTargetDim = Math.max(shape.dimension + 1, Math.min(12, shape.dimension + 1 + Math.floor(Math.random() * 3)));
     
     setSpinConfig({
         majorRadius: parseFloat(randomMajorRadius.toFixed(1)),
@@ -693,7 +1002,7 @@ const App: React.FC = () => {
             <h1 className="text-xl font-bold bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent">
                 HyperDim Architect
             </h1>
-            <p className="text-xs text-slate-500 mt-1">1D-11D Geometry Sim</p>
+            <p className="text-xs text-slate-500 mt-1">1D-12D Geometry Sim</p>
         </div>
         
         <Controls 
@@ -721,12 +1030,29 @@ const App: React.FC = () => {
             spinConfig={spinConfig}
             setSpinConfig={setSpinConfig}
             onSpinShape={handleSpinShape}
+            gyroConfig={gyroConfig}
+            setGyroConfig={setGyroConfig}
+            onCreateGyrochoron={handleCreateGyrochoron}
+            gyropetonConfig={gyropetonConfig}
+            setGyropetonConfig={setGyropetonConfig}
+            onCreateGyropeton={handleCreateGyropeton}
+            specialCutConfig={specialCutConfig}
+            setSpecialCutConfig={setSpecialCutConfig}
+            onCreateSpecialCut={handleSpecialCut}
             onTruncate={handleTruncate}
             onRectify={handleRectify}
             onOmnitruncate={handleOmnitruncate}
+            onExpand={handleExpand}
+            onRuncinate={handleRuncinate}
+            onWythoff={handleWythoff}
             onStellate={handleStellate}
             onSnub={handleSnub}
             onPyramidize={handlePyramidize}
+            onBipyramidize={handleBipyramidize}
+            onAntiprismize={handleAntiprismize}
+            onUrsaize={handleUrsaize}
+            onCupolize={handleCupolize}
+            onLoadOFF={handleLoadOFF}
             onDual={handleDual}
             hacka67Mode={hacka67Mode}
             setHacka67Mode={setHacka67Mode}
@@ -746,7 +1072,7 @@ const App: React.FC = () => {
         <div className="absolute top-4 left-4 z-10 pointer-events-none">
              <div className="bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-full border border-slate-700/50 shadow-xl flex gap-4 items-center">
                  <div className="flex items-center gap-2">
-                     <span className="text-sky-400 font-mono font-bold">{activeDim === 11 ? '11D' : `${activeDim}D View`}</span>
+                     <span className="text-sky-400 font-mono font-bold">{activeDim >= 12 ? `${activeDim}D` : `${activeDim}D View`}</span>
                      <span className="text-slate-600">|</span>
                      <span className="text-slate-300 text-sm">{shape.name}</span>
                  </div>

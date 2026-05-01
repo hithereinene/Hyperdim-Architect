@@ -1,5 +1,5 @@
 export interface Vertex {
-  // Coordinates for up to 11 dimensions: x, y, z, w, v, u, t, s, r, p, q
+  // Coordinates for up to 26 dimensions
   coords: number[]; 
 }
 
@@ -20,13 +20,22 @@ export interface ShapeStats {
   yotta?: number | string;    // 8-faces
   ronna?: number | string;    // 9-faces
   quetta?: number | string;   // 10-faces
-  ronna2?: number | string;   // 11-faces
+  double?: number | string;   // 11-faces
+  triple?: number | string;   // 12-faces
+  quadruple?: number | string; // 13-faces
+  quintuple?: number | string; // 14-faces
+  sextuple?: number | string;  // 15-faces
+  septuple?: number | string;  // 16-faces
+  octuple?: number | string;   // 17-faces
+  nonuple?: number | string;   // 18-faces
+  decuple?: number | string;   // 19-faces
   vertexFigure?: string;
 }
 
 export interface Shape {
   id: string;
   name: string;
+  description?: string;
   vertices: Vertex[];
   edges: Edge[];
   faces?: number[][]; // Optional explicit faces for non-convex shapes
@@ -39,7 +48,7 @@ export type RotationState = {
   [key: string]: number; // e.g., "XY": 0.5 (radians)
 };
 
-export const AXIS_LABELS = ['X', 'Y', 'Z', 'W', 'V', 'U', 'T', 'S', 'R', 'P', 'Q'];
+export const AXIS_LABELS = ['X', 'Y', 'Z', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'N', 'M', 'L', 'K', 'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A'];
 
 export interface GenerationResponse {
   shape: Shape;
