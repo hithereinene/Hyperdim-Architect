@@ -4935,3 +4935,225 @@ export const ursaize = (shape: Shape): Shape => {
         stats: { vertices: newVertices.length, edges: edges.length, tera: 1 }
     };
 };
+
+export const generateMaiaPrism = (n: number = 5): Shape => {
+    // n-antifastegium atop n-antifastegium is just the prism of an n-antiprism
+    const antiprism = generateAntiprism(n);
+    const extruded = extrudeShape(antiprism.vertices, antiprism.edges, 3);
+    const newVertices = extruded.vertices.map(v => ({ coords: [...v.coords, 0, 0, 0] }));
+    const edges = connectVerticesByDistance(newVertices, Math.sqrt(2)*1.05, 0.1);
+    
+    // We can just use extrudeShape on the antiprism, it gives vertices and edges!
+    const outShape = {
+        ...antiprism,
+        ...extruded,
+        dimension: 4,
+        name: `Maia Prism (${n}-antifastegium atop ${n}-antifastegium)`,
+        id: "maia-prism-" + n + "-" + Date.now(),
+        stats: { vertices: extruded.vertices.length, edges: extruded.edges.length, tera: 1 }
+    };
+    return outShape;
+};
+
+export const generatePucofastegium = (n: number): Shape => {
+    return generateSegmentochoron(generateHypercube(1), generatePolygon(n), `${n}-gonal Pucofastegium`, `pucofastegium-${n}-${Date.now()}`);
+};
+
+export const generateAntifastegium = (n: number): Shape => {
+    const top = generatePolygon(n);
+    const base = generatePrism(n);
+    const angle = Math.PI / n;
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+    for(let v of base.vertices) {
+        const x = v.coords[0];
+        const y = v.coords[1];
+        v.coords[0] = x * cosA - y * sinA;
+        v.coords[1] = x * sinA + y * cosA;
+    }
+    return generateSegmentochoron(top, base, `${n}-gonal Antifastegium`, `antifastegium-${n}-${Date.now()}`);
+};
+
+export const generateCupolifastegium = (n: number): Shape => {
+    return generateSegmentochoron(generatePolygon(n), generatePolygon(n*2), `${n}-gonal Cupolifastegium`, `cupolifastegium-${n}-${Date.now()}`);
+};
+
+export const generateAnticupolifastegium = (n: number): Shape => {
+    // n-gon atop gyro 2n-gon
+    const base = generatePolygon(n*2);
+    // rotate base by 180/(2n) degrees
+    const angle = Math.PI / (n*2);
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+    for(let v of base.vertices) {
+        const x = v.coords[0];
+        const y = v.coords[1];
+        v.coords[0] = x * cosA - y * sinA;
+        v.coords[1] = x * sinA + y * cosA;
+    }
+    return generateSegmentochoron(generatePolygon(n), base, `${n}-gonal Anticupolifastegium`, `anticupolifastegium-${n}-${Date.now()}`);
+};
+
+export const generateDuoantifastegium = (n: number): Shape => {
+    const top = generateDuoprism(n, n);
+    const base = generatePolygon(n);
+    const angle = Math.PI / n;
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+    for(let v of base.vertices) {
+        const x = v.coords[0];
+        const y = v.coords[1];
+        v.coords[0] = x * cosA - y * sinA;
+        v.coords[1] = x * sinA + y * cosA;
+    }
+    return generateSegmentochoron(top, base, `${n}-Duoantifastegium`, `duoantifastegium-${n}-${Date.now()}`);
+};
+
+export const generateDuoprismatoantifastegium = (n: number): Shape => {
+    const top = generatePrism(n);
+    const angle = Math.PI / n;
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+    // Gyro n-prism
+    for(let v of top.vertices) {
+        const x = v.coords[0];
+        const y = v.coords[1];
+        v.coords[0] = x * cosA - y * sinA;
+        v.coords[1] = x * sinA + y * cosA;
+    }
+    const base = generateDuoprism(n, n);
+    return generateSegmentochoron(top, base, `${n}-Duoprismatoantifastegium`, `duoprismatoantifastegium-${n}-${Date.now()}`);
+};
+
+export const generateDuopucofastegium = (n: number): Shape => {
+    return generateSegmentochoron(generatePolygon(n), generateDuoprism(n*2, n*2), `${n}-Duopucofastegium`, `duopucofastegium-${n}-${Date.now()}`);
+};
+
+export const generateDipucofastegium = (n: number): Shape => {
+    const prism3 = generatePrism(n*2);
+    const ext = extrudeShape(prism3.vertices, prism3.edges, 3);
+    const base = {
+        id: "base",
+        name: "base",
+        dimension: 4,
+        vertices: ext.vertices.map((v: any) => ({ coords: [...v.coords] })),
+        edges: ext.edges,
+        stats: {} as any
+    };
+    return generateSegmentochoron(generatePolygon(n), base, `${n}-Dipucofastegium`, `dipucofastegium-${n}-${Date.now()}`);
+};
+
+export const generateDuocupolifastegium = (n: number): Shape => {
+    return generateSegmentochoron(generateDuoprism(n, n), generatePolygon(n*2), `${n}-Duocupolifastegium`, `duocupolifastegium-${n}-${Date.now()}`);
+};
+
+export const generatePucoprismatoduoprism = (n: number): Shape => {
+    return generateSegmentochoron(generatePrism(n), generateDuoprism(n*2, n*2), `${n}-Pucoprismatoduoprism`, `pucoprismatoduoprism-${n}-${Date.now()}`);
+};
+
+export const generateHydroteron = (): Shape => {
+    // 5-Hydroteron
+    // Cross sections: Point, 600-cell, 120-cell, Bitruncated 120-cell
+
+    const vertices: { coords: number[] }[] = [];
+    const sliceOffsets: number[] = [];
+    const sliceSizes: number[] = [];
+    const edges: { source: number, target: number }[] = [];
+
+    const addSlice = (shape: Shape | null, v: number, targetRadius: number) => {
+        sliceOffsets.push(vertices.length);
+        if (!shape) {
+            vertices.push({ coords: [0, 0, 0, 0, v] });
+            sliceSizes.push(1);
+            return;
+        }
+
+        let currentRadius = 1;
+        if (shape.vertices.length > 0) {
+            let rSq = 0;
+            for(let x of shape.vertices[0].coords) rSq += x*x;
+            currentRadius = Math.sqrt(rSq);
+        }
+        if (currentRadius === 0) currentRadius = 1;
+        const scale = targetRadius / currentRadius;
+
+        const startIndex = vertices.length;
+        shape.vertices.forEach(vert => {
+            const c4 = [0, 0, 0, 0];
+            for (let i = 0; i < Math.min(4, vert.coords.length); i++) {
+                c4[i] = vert.coords[i] * scale;
+            }
+            vertices.push({ coords: [...c4, v] });
+        });
+        sliceSizes.push(shape.vertices.length);
+        
+        // Add intra-slice edges
+        shape.edges.forEach(e => {
+            edges.push({
+                source: startIndex + e.source,
+                target: startIndex + e.target
+            });
+        });
+    };
+
+    const bitruncated120 = truncateShape(rectifyShape(generate120Cell()));
+    const c120 = generate120Cell();
+    const c600 = generate600Cell();
+
+    const R = 2; 
+    const vs = [2.0, 1.3, 0.6, 0, -0.6, -1.3, -2.0];
+    const shapes = [null, c600, c120, bitruncated120, c120, c600, null];
+
+    for(let i=0; i<7; i++) {
+        const v = vs[i];
+        let r = Math.sqrt(Math.max(0, R*R - v*v));
+        addSlice(shapes[i], v, r);
+    }
+
+    // Connect adjacent slices based on a fixed distance threshold.
+    // This is much faster than sorting K-nearest neighbors.
+    // We expect points in adjacent slices to be roughly ~0.7 to 1.1 apart in 5D space.
+    // We calibrate thresholds specifically for each transition to keep edge counts reasonable.
+    
+    // index 0 -> 1 : Point to 600-cell
+    for(let i=sliceOffsets[1]; i<sliceOffsets[1]+sliceSizes[1]; i++) edges.push({source: 0, target: i});
+
+    // index 5 -> 6 : 600-cell to Point
+    const pole2 = sliceOffsets[6];
+    for(let i=sliceOffsets[5]; i<sliceOffsets[5]+sliceSizes[5]; i++) edges.push({source: pole2, target: i});
+
+    // For 600-cell <-> 120-cell, size is 120 vs 600. Threshold ~ 0.5
+    // For 120-cell <-> bitruncated 120-cell, size is 600 vs 7200. Threshold ~ 0.25 (to keep edge count sane)
+
+    const connectSlices = (s1: number, s2: number, tSq: number) => {
+        const start1 = sliceOffsets[s1];
+        const end1 = start1 + sliceSizes[s1];
+        const start2 = sliceOffsets[s2];
+        const end2 = start2 + sliceSizes[s2];
+        for (let i = start1; i < end1; i++) {
+            const v1 = vertices[i].coords;
+            for (let j = start2; j < end2; j++) {
+                const v2 = vertices[j].coords;
+                let dSq = 0;
+                for(let k = 0; k < 5; k++) dSq += (v1[k] - v2[k])*(v1[k] - v2[k]);
+                if (dSq < tSq) {
+                    edges.push({source: i, target: j});
+                }
+            }
+        }
+    };
+
+    connectSlices(1, 2, 0.72);
+    connectSlices(2, 3, 0.42);
+    connectSlices(3, 4, 0.42);
+    connectSlices(4, 5, 0.72);
+
+    return {
+        id: "hydroteron-" + Date.now(),
+        name: "Hydroteron",
+        dimension: 5,
+        vertices,
+        edges,
+        stats: { vertices: vertices.length, edges: edges.length, tera: 1 }
+    };
+};

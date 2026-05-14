@@ -115,6 +115,19 @@ import {
     generateTrioprism,
     generateTriopyramid,
     generateTriotegum,
+    
+    generatePucofastegium,
+    generateAntifastegium,
+    generateCupolifastegium,
+    generateAnticupolifastegium,
+    generateDuoantifastegium,
+    generateDuoprismatoantifastegium,
+    generateDuopucofastegium,
+    generateDipucofastegium,
+    generateDuocupolifastegium,
+    generatePucoprismatoduoprism,
+generateMaiaPrism,
+    generateHydroteron,
     generateTriocylinder,
     generateTriocone,
     generateDuotegum,
@@ -245,6 +258,12 @@ const App: React.FC = () => {
 
   // Determine easter egg probability once per page load
   const [isAprilFools] = useState<boolean>(() => Math.random() < 0.5);
+  const [showMaiaPrism] = useState<boolean>(() => {
+    const date = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+    const isMay2nd = date.getMonth() === 4 && date.getDate() === 2;
+    return isMay2nd || Math.random() < 0.5;
+  });
+
   
   // Hacka 67 Mode
   const [hacka67Mode, setHacka67Mode] = useState<boolean>(false);
@@ -364,6 +383,16 @@ const App: React.FC = () => {
               newShape = generateAntiprism(sides1);
               targetDim = 3;
               break;
+                    case "Pucofastegium": newShape = generatePucofastegium(sides1); targetDim=3; break;
+          case "Antifastegium": newShape = generateAntifastegium(sides1); targetDim=4; break;
+          case "Cupolifastegium": newShape = generateCupolifastegium(sides1); targetDim=3; break;
+          case "Anticupolifastegium": newShape = generateAnticupolifastegium(sides1); targetDim=3; break;
+          case "Duoantifastegium": newShape = generateDuoantifastegium(sides1); targetDim=5; break;
+          case "Duoprismatoantifastegium": newShape = generateDuoprismatoantifastegium(sides1); targetDim=5; break;
+          case "Duopucofastegium": newShape = generateDuopucofastegium(sides1); targetDim=5; break;
+          case "Dipucofastegium": newShape = generateDipucofastegium(sides1); targetDim=5; break;
+          case "Duocupolifastegium": newShape = generateDuocupolifastegium(sides1); targetDim=5; break;
+          case "Pucoprismatoduoprism": newShape = generatePucoprismatoduoprism(sides1); targetDim=5; break;
           case 'Duoprism':
               newShape = generateDuoprism(sides1, sides2);
               targetDim = 4;
@@ -775,6 +804,19 @@ const App: React.FC = () => {
         case 'tetrahedral-ursachoron': newShape = generateTetrahedralUrsachoron(); targetDim=4; break;
         case 'octahedral-ursachoron': newShape = generateOctahedralUrsachoron(); targetDim=4; break;
         case 'icosahedral-ursachoron': newShape = generateIcosahedralUrsachoron(); targetDim=4; break;
+        
+        case 'pucofastegium': newShape = generatePucofastegium(5); targetDim=3; break;
+        case 'antifastegium': newShape = generateAntifastegium(5); targetDim=3; break;
+        case 'cupolifastegium': newShape = generateCupolifastegium(5); targetDim=3; break;
+        case 'anticupolifastegium': newShape = generateAnticupolifastegium(5); targetDim=3; break;
+        case 'duoantifastegium': newShape = generateDuoantifastegium(5); targetDim=5; break;
+        case 'duoprismatoantifastegium': newShape = generateDuoprismatoantifastegium(5); targetDim=5; break;
+        case 'duopucofastegium': newShape = generateDuopucofastegium(5); targetDim=5; break;
+        case 'dipucofastegium': newShape = generateDipucofastegium(5); targetDim=5; break;
+        case 'duocupolifastegium': newShape = generateDuocupolifastegium(5); targetDim=5; break;
+        case 'pucoprismatoduoprism': newShape = generatePucoprismatoduoprism(5); targetDim=5; break;
+case 'maia-prism': newShape = generateMaiaPrism(5); targetDim=4; break;
+        case 'hydroteron': newShape = generateHydroteron(); targetDim=5; break;
         case 'deca-augmented-5-10-duoprism': newShape = generateDecaAugmented5_10Duoprism(); targetDim=4; break;
         case 'deca-augmented-5-20-duoprism': newShape = generateDecaAugmented5_20Duoprism(); targetDim=4; break;
         case 'augmented-cantitruncated-5-cell': newShape = generateAugmentedCantitruncated5Cell(); targetDim=4; break;
@@ -1058,6 +1100,7 @@ const App: React.FC = () => {
             setHacka67Mode={setHacka67Mode}
             may2ndMode={may2ndMode}
             setMay2ndMode={setMay2ndMode}
+            showMaiaPrism={showMaiaPrism}
             showToratopeExplorer={showToratopeExplorer}
             setShowToratopeExplorer={setShowToratopeExplorer}
             onLoadNumericToratope={handleLoadNumericToratope}

@@ -58,6 +58,7 @@ interface ControlsProps {
   setHacka67Mode?: (mode: boolean) => void;
   may2ndMode?: boolean;
   setMay2ndMode?: (mode: boolean) => void;
+  showMaiaPrism?: boolean;
   showToratopeExplorer?: boolean;
   setShowToratopeExplorer?: (mode: boolean) => void;
   onLoadNumericToratope?: (sequence: string, name?: string) => void;
@@ -261,6 +262,7 @@ const Controls: React.FC<ControlsProps> = ({
   setHacka67Mode,
   may2ndMode,
   setMay2ndMode,
+  showMaiaPrism,
   showToratopeExplorer,
   setShowToratopeExplorer,
   onLoadNumericToratope,
@@ -831,7 +833,7 @@ const Controls: React.FC<ControlsProps> = ({
                      <div className="space-y-1">
                         <label className="text-xs text-slate-400">Construction Type</label>
                         <div className="grid grid-cols-2 gap-2">
-                            {['Pyramid', 'Bipyramid', 'Prism', 'Antiprism', 'Duoprism', 'Duotegnum', 'Trioprism', 'Triopyramid', 'Triotegnum'].map(t => (
+                            {['Pyramid', 'Bipyramid', 'Prism', 'Antiprism', 'Pucofastegium', 'Antifastegium', 'Cupolifastegium', 'Anticupolifastegium', 'Duoprism', 'Duotegnum', 'Duoantifastegium', 'Duoprismatoantifastegium', 'Duopucofastegium', 'Dipucofastegium', 'Duocupolifastegium', 'Pucoprismatoduoprism', 'Trioprism', 'Triopyramid', 'Triotegnum'].map(t => (
                                 <button
                                     key={t}
                                     onClick={() => setNtopeConfig({...ntopeConfig, type: t})}
@@ -990,6 +992,11 @@ const Controls: React.FC<ControlsProps> = ({
                     <option value="enneacontahedron">Enneacontahedron</option>
                     <option value="prism-3">Triangular Prism</option>
                     <option value="prism-5">Pentagonal Prism</option>
+                    <option value="pucofastegium">Pucofastegium (5-gonal)</option>
+                    <option value="antifastegium">Antifastegium (5-gonal)</option>
+                    <option value="cupolifastegium">Cupolifastegium (5-gonal)</option>
+                    <option value="anticupolifastegium">Anticupolifastegium (5-gonal)</option>
+
                     <option value="prism-6">Hexagonal Prism</option>
                     <option value="pyramid-4">Square Pyramid</option>
                     <option value="pyramid-5">Pentagonal Pyramid</option>
@@ -1075,6 +1082,7 @@ const Controls: React.FC<ControlsProps> = ({
                     <option value="demipenteract">Demipenteract (5D)</option>
                     <option value="dodecateron">Dodecateron (Rectified Hexateron)</option>
                     <option value="1200-teron">1200-Cell (1200 Tera)</option>
+                    <option value="hydroteron">Hydroteron</option>
                     <option value="hexeract">Hexeract (6D)</option>
                     <option value="hepteract">Hepteract (7D)</option>
                     <option value="2_21-polytope">2_21 Polytope (6D)</option>
